@@ -11,4 +11,6 @@ contract WBT is ERC20 {
     function decimals() public view virtual override returns (uint8) {
         return 8; // Bitcoin has 8 decimal places
     }
+
 }
+
