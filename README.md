@@ -17,7 +17,7 @@ Local & Testnet Ready: Can be tested on Hardhat local network or Sepolia testnet
 
 # Installation
 Clone this repository:
-git clone https://github.com/<username>/SmartWallet-Blockchain.git
+git clone https://github.com/sida-metin/SmartWallet-Blockchain.git
 cd SmartWallet-Blockchain
 Install dependencies:
 yarn install
