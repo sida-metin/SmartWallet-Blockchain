@@ -71,6 +71,7 @@ contract WalletBank {
     function withdraw(uint _amount) public { // para çekme işlemi
         require (balance[msg.sender]>= _amount, "Insufficient balance");
         balance[msg.sender] -= _amount;
+        payable(msg.sender).transfer(_amount);
     }
 
 }
