@@ -4,16 +4,16 @@ WalletBank is a smart contract system designed to handle both native ETH and ERC
 
 # The project demonstrates:
 
-Basic banking logic: deposit, withdraw, transfer.
-Token handling: ERC20 token (WBT) with approve & depositToken flow.
-Transaction history tracking: storing user deposits with timestamps.
+- Basic banking logic: deposit, withdraw, transfer.
+- Token handling: ERC20 token (WBT) with approve & depositToken flow.
+- Transaction history tracking: storing user deposits with timestamps.
 
 # Features
-ETH Deposit & Withdraw: Users can send ETH into the contract and later withdraw it.
-ERC20 Support (WBT Token): Deposit and withdraw custom ERC20 tokens.
-Secure Balance Tracking: Individual user balances are stored inside the contract.
-Events & History: Every deposit is logged with events and can be queried by user.
-Local & Testnet Ready: Can be tested on Hardhat local network or Sepolia testnet.
+- ETH Deposit & Withdraw: Users can send ETH into the contract and later withdraw it.
+- ERC20 Support (WBT Token): Deposit and withdraw custom ERC20 tokens.
+- Secure Balance Tracking: Individual user balances are stored inside the contract.
+- Events & History: Every deposit is logged with events and can be queried by user.
+- Local & Testnet Ready: Can be tested on Hardhat local network or Sepolia testnet.
 
 # Installation
 Clone this repository:
