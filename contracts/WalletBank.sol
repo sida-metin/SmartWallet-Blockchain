@@ -9,13 +9,11 @@ contract WalletBank {
     uint public maxDeposit;
     uint public fee; 
     uint public constant transferDailyLimit = 15 ether;
-    uint today = block.timestamp / 1 days; 
 
-
-    mapping (address => uint256) public balance;
-    mapping (address => mapping (address => uint256)) public tokenDeposit; //adrese göre token
-    mapping (address => uint256) public dailyTransfer;
-    mapping (address => uint256) public lastTransferDay;
+    mapping (address => uint256) private balance;
+    mapping (address => mapping (address => uint256)) private tokenDeposit; //adrese göre token
+    mapping (address => uint256) private dailyTransfer;
+    mapping (address => uint256) private lastTransferDay;
 
     event DepositMade(address indexed reciever, uint amount, uint timestamp);
     event tokenDepositMade(address indexed depositor, address indexed token, uint amount, uint timestamp);
@@ -61,6 +59,22 @@ contract WalletBank {
         fee = _fee;
     }
 
+    function getBalance(address _user) public view returns (uint) {
+        return balance[_user];
+    }
+
+    function getTokenDeposit(address _user, address _token) public view returns (uint) {
+        return tokenDeposit[_user][_token];
+    }
+
+    function getDailyTransfer(address _user) public view returns (uint) { //Kullanıcının günlük transfer miktarı
+        return dailyTransfer[_user];
+    }
+
+    function getLastTransferDay(address _user) public view returns (uint) { //Hangi gün transfer yaptığı
+        return lastTransferDay[_user];
+    }
+
     function deposit() public payable{ // para yatırma işlemi
         require (msg.value >= minDeposit, "Deposit below min limit");
         require ( msg.value<= maxDeposit, "Deposit exceeds max limit");
@@ -90,6 +104,7 @@ contract WalletBank {
     }
 
     modifier dailyTransferLimit(uint _amount) {
+        uint today = block.timestamp / 1 days; 
         if(lastTransferDay[msg.sender] != today){
             dailyTransfer[msg.sender] = 0;
             lastTransferDay[msg.sender] = today;
@@ -101,10 +116,12 @@ contract WalletBank {
 
     function transfer(address _to, uint _amount) public dailyTransferLimit(_amount) { // para transferi --payable ödeme aldığında yazılır
         require(balance[msg.sender] >= _amount, "Insufficient balance");
+        require(_to != address(0), "Invalid recipient address");
+        require(_to != msg.sender, "Cannot transfer to yourself");
         balance[msg.sender] -= _amount;
-        payable(_to).transfer(_amount);
         uint feeAmount = (_amount * fee) / 100; 
-        balance[_to] += _amount-feeAmount;
+        uint netAmount = _amount - feeAmount;
+        payable(_to).transfer(netAmount);
         treasury.amount += feeAmount; 
 
         transferHistory[msg.sender].push(TransferHistory({
@@ -117,7 +134,6 @@ contract WalletBank {
 
         emit TransferMade(msg.sender,_to,_amount, feeAmount, block.timestamp);
     }
-
 
     function withdraw(uint _amount) public { // para çekme işlemi
         require (balance[msg.sender]>= _amount, "Insufficient balance");

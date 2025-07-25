@@ -229,8 +229,8 @@
       ]
     },
     "/Users/sida/Desktop/BLOCKCHAIN PROJECTS/smartWallet-bank/contracts/WalletBank.sol": {
-      "lastModificationDate": 1753176664947,
-      "contentHash": "55fe198070c0dc2453fb3a2beb5845f2",
+      "lastModificationDate": 1753455203351,
+      "contentHash": "d4348d5c7e34d5347464a4880e670283",
       "sourceName": "contracts/WalletBank.sol",
       "solcConfig": {
         "version": "0.8.20",
