@@ -7,12 +7,14 @@ contract WalletBank {
     address public owner;
     uint public minDeposit;
     uint public maxDeposit;
+    uint public fee; 
 
     mapping (address => uint256) public balance;
     mapping (address => mapping (address => uint256)) public tokenDeposit; //adrese göre token
 
     event DepositMade(address indexed reciever, uint amount, uint timestamp);
     event tokenDepositMade(address indexed depositor, address indexed token, uint amount, uint timestamp);
+    event TransferMade(address indexed from, address indexed to, uint amount,uint fee, uint timestamp);
 
     struct Deposit{
         address depositor;
@@ -22,15 +24,27 @@ contract WalletBank {
     }
     mapping (address => Deposit[]) public depositHistory;
 
+    struct Treasury {
+        address owner;
+        uint amount;
+    }
+    Treasury public treasury;
+    mapping (address => Treasury[]) public treasuries;
+
     constructor(){
         owner = msg.sender;
         minDeposit = 0.01 ether; 
         maxDeposit = 10 ether; 
+        fee = 2; //%2 fee
     }
 
     modifier onlyOwner(){
         require (msg.sender == owner, "Only owner can call this function");
         _;
+    }
+
+    function setFee(uint _fee) public onlyOwner {
+        fee = _fee;
     }
 
     function deposit() public payable{ // para yatırma işlemi
@@ -65,7 +79,11 @@ contract WalletBank {
         require(balance[msg.sender] >= _amount, "Insufficient balance");
         balance[msg.sender] -= _amount;
         payable(_to).transfer(_amount);
-        balance[_to] += _amount;
+        uint feeAmount = (_amount * fee) / 100; 
+        balance[_to] += _amount-feeAmount;
+        treasury.amount += feeAmount; 
+
+        emit TransferMade(msg.sender,_to,_amount, feeAmount, block.timestamp);
     }
 
     function withdraw(uint _amount) public { // para çekme işlemi
@@ -73,5 +91,8 @@ contract WalletBank {
         balance[msg.sender] -= _amount;
         payable(msg.sender).transfer(_amount);
     }
+
+    
+
 
 }
