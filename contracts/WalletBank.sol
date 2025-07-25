@@ -8,9 +8,14 @@ contract WalletBank {
     uint public minDeposit;
     uint public maxDeposit;
     uint public fee; 
+    uint public constant transferDailyLimit = 15 ether;
+    uint today = block.timestamp / 1 days; 
+
 
     mapping (address => uint256) public balance;
     mapping (address => mapping (address => uint256)) public tokenDeposit; //adrese göre token
+    mapping (address => uint256) public dailyTransfer;
+    mapping (address => uint256) public lastTransferDay;
 
     event DepositMade(address indexed reciever, uint amount, uint timestamp);
     event tokenDepositMade(address indexed depositor, address indexed token, uint amount, uint timestamp);
@@ -23,6 +28,15 @@ contract WalletBank {
         string txHash;
     }
     mapping (address => Deposit[]) public depositHistory;
+
+    struct TransferHistory {
+        address from;
+        address to;
+        uint amount;
+        uint fee;
+        uint timestamp;
+    }
+    mapping (address => TransferHistory[]) public transferHistory;
 
     struct Treasury {
         address owner;
@@ -75,7 +89,17 @@ contract WalletBank {
         
     }
 
-    function transfer(address _to, uint _amount) public { // para transferi --payable ödeme aldığında yazılır
+    modifier dailyTransferLimit(uint _amount) {
+        if(lastTransferDay[msg.sender] != today){
+            dailyTransfer[msg.sender] = 0;
+            lastTransferDay[msg.sender] = today;
+        }
+        require(dailyTransfer[msg.sender] + _amount <= transferDailyLimit, "Daily transfer limit exceeded");
+        dailyTransfer[msg.sender] += _amount;
+        _;
+    }
+
+    function transfer(address _to, uint _amount) public dailyTransferLimit(_amount) { // para transferi --payable ödeme aldığında yazılır
         require(balance[msg.sender] >= _amount, "Insufficient balance");
         balance[msg.sender] -= _amount;
         payable(_to).transfer(_amount);
@@ -83,16 +107,21 @@ contract WalletBank {
         balance[_to] += _amount-feeAmount;
         treasury.amount += feeAmount; 
 
+        transferHistory[msg.sender].push(TransferHistory({
+            from: msg.sender,
+            to: _to,
+            amount: _amount,
+            fee: feeAmount,
+            timestamp: block.timestamp
+        }));
+
         emit TransferMade(msg.sender,_to,_amount, feeAmount, block.timestamp);
     }
+
 
     function withdraw(uint _amount) public { // para çekme işlemi
         require (balance[msg.sender]>= _amount, "Insufficient balance");
         balance[msg.sender] -= _amount;
         payable(msg.sender).transfer(_amount);
     }
-
-    
-
-
 }
