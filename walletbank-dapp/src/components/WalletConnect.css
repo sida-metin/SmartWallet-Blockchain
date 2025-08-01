@@ -1,0 +1,32 @@
+.navbar {
+  background-color: #1a1a1a;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.connect-button {
+  background-color: #4f46e5;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.connect-button:hover {
+  background-color: #3730a3;
+}
+
+.account {
+  background-color: #16a34a;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}

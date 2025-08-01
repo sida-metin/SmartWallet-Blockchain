@@ -1,10 +1,9 @@
-import Header from './components/Header';
+import WalletConnect from './components/WalletConnect';
 
 function App() {
   return (
     <div>
-      <Header />
-      <h1>Wallet Bank!</h1>
+      <WalletConnect />
     </div>
   );
 }
