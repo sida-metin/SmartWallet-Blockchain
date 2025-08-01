@@ -1,6 +1,3 @@
-// Bu dosyada kontrat adresleri ve ABIl'leri merkezi olarak tutulur.
-// Adresler değişirse sadece burayı güncellemen yeterli!
-
 export const WALLETBANK_ADDRESS = "0x792b8997f1f6CfD7daAA1D3E3C8E417E04f5B331";
 export const WALLETBANK_ABI = [
   { "inputs": [], "stateMutability": "payable", "type": "function", "name": "deposit", "outputs": [] },
