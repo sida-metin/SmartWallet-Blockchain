@@ -1,32 +1,123 @@
-.navbar {
-  background-color: #1a1a1a;
-  color: white;
-  padding: 1rem 2rem;
+
+/* Wallet Container */
+.wallet-container {
+  min-height: 100vh;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #232526 0%, #414345 100%);
 }
 
-.logo {
+/* Wallet Card */
+.wallet-card {
+  background: #18181b;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px 0 #00000033;
+  padding: 2.5rem 2rem 2rem 2rem;
+  min-width: 340px;
+  max-width: 95vw;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.wallet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.wallet-logo {
+  font-size: 1.3rem;
   font-weight: bold;
-  font-size: 1.2rem;
+  letter-spacing: 1px;
 }
 
 .connect-button {
-  background-color: #4f46e5;
-  color: white;
-  padding: 0.5rem 1rem;
+  background: linear-gradient(90deg, #6366f1 0%, #4f46e5 100%);
+  color: #fff;
   border: none;
   border-radius: 8px;
+  padding: 0.6rem 1.3rem;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: background 0.2s;
 }
-
 .connect-button:hover {
-  background-color: #3730a3;
+  background: linear-gradient(90deg, #3730a3 0%, #6366f1 100%);
 }
 
 .account {
-  background-color: #16a34a;
-  padding: 0.5rem 1rem;
+  background: #16a34a;
+  color: #fff;
+  padding: 0.5rem 1.1rem;
   border-radius: 8px;
+  font-size: 1rem;
+  font-family: monospace;
+}
+
+.wallet-balance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #23272f;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+.balance-amount {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #facc15;
+}
+
+.wallet-form {
+  display: flex;
+  gap: 0.7rem;
+  margin-bottom: 0.2rem;
+}
+.wallet-form input[type="number"],
+.wallet-form input[type="text"] {
+  background: #23272f;
+  border: 1px solid #373737;
+  border-radius: 7px;
+  color: #fff;
+  padding: 0.5rem 0.9rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+.wallet-form input:focus {
+  border: 1.5px solid #6366f1;
+}
+.action-button {
+  background: linear-gradient(90deg, #6366f1 0%, #4f46e5 100%);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.5rem 1.1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.action-button:hover {
+  background: linear-gradient(90deg, #3730a3 0%, #6366f1 100%);
+}
+.action-button.withdraw {
+  background: linear-gradient(90deg, #f59e42 0%, #fbbf24 100%);
+  color: #18181b;
+}
+.action-button.withdraw:hover {
+  background: linear-gradient(90deg, #fbbf24 0%, #f59e42 100%);
+}
+.action-button.transfer {
+  background: linear-gradient(90deg, #06b6d4 0%, #0ea5e9 100%);
+}
+.action-button.transfer:hover {
+  background: linear-gradient(90deg, #0ea5e9 0%, #06b6d4 100%);
 }
