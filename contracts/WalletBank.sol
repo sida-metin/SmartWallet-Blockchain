@@ -2,8 +2,9 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract WalletBank {
+contract WalletBank is ReentrancyGuard {
     address public owner;
     uint public minDeposit;
     uint public maxDeposit;
@@ -114,7 +115,7 @@ contract WalletBank {
         _;
     }
 
-    function transfer(address _to, uint _amount) public dailyTransferLimit(_amount) { // para transferi --payable ödeme aldığında yazılır
+    function transfer(address _to, uint _amount) public nonReentrant dailyTransferLimit(_amount) { // para transferi --payable ödeme aldığında yazılır
         require(balance[msg.sender] >= _amount, "Insufficient balance");
         require(_to != address(0), "Invalid recipient address");
         require(_to != msg.sender, "Cannot transfer to yourself");
@@ -135,9 +136,11 @@ contract WalletBank {
         emit TransferMade(msg.sender,_to,_amount, feeAmount, block.timestamp);
     }
 
-    function withdraw(uint _amount) public { // para çekme işlemi
+    function withdraw(address _address,uint _amount) public nonReentrant { // para çekme işlemi
         require (balance[msg.sender]>= _amount, "Insufficient balance");
+        require(_address == msg.sender, "You can only withdraw to your own address");
+        require (_address != address(0), "Invalid address");
         balance[msg.sender] -= _amount;
-        payable(msg.sender).transfer(_amount);
+        payable(_address).transfer(_amount);
     }
 }
