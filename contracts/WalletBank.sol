@@ -136,11 +136,9 @@ contract WalletBank is ReentrancyGuard {
         emit TransferMade(msg.sender,_to,_amount, feeAmount, block.timestamp);
     }
 
-    function withdraw(address _address,uint _amount) public nonReentrant { // para çekme işlemi
-        require (balance[msg.sender]>= _amount, "Insufficient balance");
-        require(_address == msg.sender, "You can only withdraw to your own address");
-        require (_address != address(0), "Invalid address");
-        balance[msg.sender] -= _amount;
-        payable(_address).transfer(_amount);
+    function withdraw(uint _amount) public nonReentrant {
+    require(balance[msg.sender] >= _amount, "Insufficient balance");
+    balance[msg.sender] -= _amount;
+    payable(msg.sender).transfer(_amount);
     }
 }
