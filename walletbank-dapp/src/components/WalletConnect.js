@@ -170,7 +170,7 @@ function WalletConnect() {
         {account && (
           <>
             <div className="wallet-balance">
-              <span>Bakiye:</span>
+              <span>Balance:</span>
               <span className="balance-amount">{balance} ETH</span>
             </div>
             <form className="wallet-form" onSubmit={handleDeposit}>
