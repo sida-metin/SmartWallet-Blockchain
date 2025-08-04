@@ -229,8 +229,8 @@
       ]
     },
     "/Users/sida/Desktop/BLOCKCHAIN PROJECTS/smartWallet-bank/contracts/WalletBank.sol": {
-      "lastModificationDate": 1753460842658,
-      "contentHash": "6d961bee83c3e60b0b828a4a1644995c",
+      "lastModificationDate": 1754078070764,
+      "contentHash": "2bbdaf433affd702ea6471f5dba7a9e6",
       "sourceName": "contracts/WalletBank.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -257,13 +257,50 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/token/ERC20/IERC20.sol"
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
       ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
         "WalletBank"
+      ]
+    },
+    "/Users/sida/Desktop/BLOCKCHAIN PROJECTS/smartWallet-bank/node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
+      "lastModificationDate": 1754076888791,
+      "contentHash": "190613e556d509d9e9a0ea43dc5d891d",
+      "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ReentrancyGuard"
       ]
     }
   }

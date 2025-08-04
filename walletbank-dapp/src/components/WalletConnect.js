@@ -22,31 +22,94 @@ function WalletConnect() {
   const [wbtTransferAmount, setWbtTransferAmount] = useState("");
 
   // Web3.js veya ethers.js ile kontrat çağrısı için
-  // WBT bakiyesini blockchain'den oku
-  // Hem ETH hem WBT bakiyesini blockchain'den oku
+  // Bakiye güncelleme fonksiyonu
+  const getBalances = async () => {
+    if (!window.ethereum || !account) return;
+    try {
+      const provider = new BrowserProvider(window.ethereum);
+      let newWbtBalance = 0;
+      let newBalance = 0;
+      
+      // WBT
+      const wbtContract = new Contract(WBT_ADDRESS, WBT_ABI, provider);
+      try {
+        const decimals = await wbtContract.decimals();
+        setWbtDecimals(Number(decimals));
+        const symbol = await wbtContract.symbol();
+        setWbtSymbol(symbol);
+        const wbtBal = await wbtContract.balanceOf(account);
+        newWbtBalance = Number(formatUnits(wbtBal, Number(decimals)));
+        setWbtBalance(newWbtBalance);
+      } catch (e) {
+        console.error("WBT Error:", e);
+        setWbtDecimals(8);
+        setWbtSymbol("WBT");
+        setWbtBalance(0);
+      }
+      
+      // ETH (MetaMask'taki bakiye)
+      const ethBal = await provider.getBalance(account);
+      newBalance = Number(formatUnits(ethBal, 18));
+      setBalance(newBalance);
+      
+      // localStorage'a kaydet
+      localStorage.setItem('wbtBalance', newWbtBalance.toString());
+      localStorage.setItem('ethBalance', newBalance.toString());
+      localStorage.setItem('account', account);
+      
+    } catch (e) {
+      console.error('Balance yükleme hatası:', e);
+      setWbtBalance(0);
+      setBalance(0);
+    }
+  };
+
+  useEffect(() => {
+    // Sayfa yüklendiğinde localStorage'dan balance'ları yükle
+    const savedAccount = localStorage.getItem('account');
+    const savedWbtBalance = localStorage.getItem('wbtBalance');
+    const savedEthBalance = localStorage.getItem('ethBalance');
+    
+    if (savedAccount && savedWbtBalance && savedEthBalance) {
+      setAccount(savedAccount);
+      setWbtBalance(parseFloat(savedWbtBalance));
+      setBalance(parseFloat(savedEthBalance));
+    }
+  }, []);
+
   useEffect(() => {
     if (window.ethereum && account) {
-      const getBalances = async () => {
-        try {
-          const provider = new BrowserProvider(window.ethereum);
-          // WBT
-          const wbtContract = new Contract(WBT_ADDRESS, WBT_ABI, provider);
-          const decimals = await wbtContract.decimals();
-          setWbtDecimals(Number(decimals));
-          const symbol = await wbtContract.symbol();
-          setWbtSymbol(symbol);
-          const wbtBal = await wbtContract.balanceOf(account);
-          setWbtBalance(Number(formatUnits(wbtBal, decimals)));
-          // ETH (WalletBank kontratındaki bakiye)
-          const walletBank = new Contract(WALLETBANK_ADDRESS, WALLETBANK_ABI, provider);
-          const ethBal = await walletBank.ethBalanceOf(account);
-          setBalance(Number(formatUnits(ethBal, 18)));
-        } catch (e) {
-          setWbtBalance(0);
-          setBalance(0);
+      getBalances();
+      
+      // Her 10 saniyede bir balance güncelle
+      const interval = setInterval(getBalances, 10000);
+      
+      // Account değişikliğini dinle
+      const handleAccountsChanged = (accounts) => {
+        if (accounts.length > 0) {
+          setAccount(accounts[0]);
+          localStorage.setItem('account', accounts[0]);
+        } else {
+          setAccount("");
+          localStorage.removeItem('account');
+          localStorage.removeItem('wbtBalance');
+          localStorage.removeItem('ethBalance');
         }
       };
-      getBalances();
+
+      // Chain değişikliğini dinle
+      const handleChainChanged = () => {
+        window.location.reload();
+      };
+
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+
+      return () => {
+        clearInterval(interval);
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      };
     }
   }, [account]);
 
@@ -75,9 +138,7 @@ function WalletConnect() {
       const tx = await contract.deposit({ value: parseUnits(depositAmount, 18) });
       await tx.wait();
       setDepositAmount("");
-      // Bakiye güncelle
-      const ethBal = await contract.ethBalanceOf(account);
-      setBalance(Number(formatUnits(ethBal, 18)));
+      await getBalances();
       alert("Deposit başarılı!");
     } catch (err) {
       alert("Deposit başarısız: " + (err?.reason || err?.message || err));
@@ -97,9 +158,7 @@ function WalletConnect() {
       const tx = await contract.withdraw(amount);
       await tx.wait();
       setWithdrawAmount("");
-      // Bakiye güncelle
-      const ethBal = await contract.ethBalanceOf(account);
-      setBalance(Number(formatUnits(ethBal, 18)));
+      await getBalances();
       alert("Withdraw başarılı!");
     } catch (err) {
       alert("Withdraw başarısız: " + (err?.reason || err?.message || err));
@@ -120,9 +179,7 @@ function WalletConnect() {
       await tx.wait();
       setTransferAmount("");
       setTransferTo("");
-      // Bakiye güncelle
-      const ethBal = await contract.ethBalanceOf(account);
-      setBalance(Number(formatUnits(ethBal, 18)));
+      await getBalances();
       alert("Transfer başarılı!");
     } catch (err) {
       alert("Transfer başarısız: " + (err?.reason || err?.message || err));
