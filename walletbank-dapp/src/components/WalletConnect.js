@@ -21,8 +21,7 @@ function WalletConnect() {
   const [wbtTransferTo, setWbtTransferTo] = useState("");
   const [wbtTransferAmount, setWbtTransferAmount] = useState("");
 
-  // Web3.js veya ethers.js ile kontrat çağrısı için
-  // Bakiye güncelleme fonksiyonu
+
   const getBalances = async () => {
     if (!window.ethereum || !account) return;
     try {
@@ -47,12 +46,10 @@ function WalletConnect() {
         setWbtBalance(0);
       }
       
-      // ETH (MetaMask'taki bakiye)
       const ethBal = await provider.getBalance(account);
       newBalance = Number(formatUnits(ethBal, 18));
       setBalance(newBalance);
       
-      // localStorage'a kaydet
       localStorage.setItem('wbtBalance', newWbtBalance.toString());
       localStorage.setItem('ethBalance', newBalance.toString());
       localStorage.setItem('account', account);
@@ -65,7 +62,6 @@ function WalletConnect() {
   };
 
   useEffect(() => {
-    // Sayfa yüklendiğinde localStorage'dan balance'ları yükle
     const savedAccount = localStorage.getItem('account');
     const savedWbtBalance = localStorage.getItem('wbtBalance');
     const savedEthBalance = localStorage.getItem('ethBalance');
@@ -81,10 +77,8 @@ function WalletConnect() {
     if (window.ethereum && account) {
       getBalances();
       
-      // Her 10 saniyede bir balance güncelle
       const interval = setInterval(getBalances, 10000);
       
-      // Account değişikliğini dinle
       const handleAccountsChanged = (accounts) => {
         if (accounts.length > 0) {
           setAccount(accounts[0]);
@@ -97,7 +91,6 @@ function WalletConnect() {
         }
       };
 
-      // Chain değişikliğini dinle
       const handleChainChanged = () => {
         window.location.reload();
       };
@@ -119,14 +112,13 @@ function WalletConnect() {
         method: "eth_requestAccounts",
       });
       setAccount(accounts[0]);
-      // Bakiye otomatik güncellenecek
     } else {
       alert("MetaMask not found. Please install it.");
     }
   };
 
 
-  // Gerçek ETH deposit (WalletBank'a ETH gönder)
+  //  ETH deposit 
   const handleDeposit = async (e) => {
     e.preventDefault();
     if (!window.ethereum) return alert("MetaMask not found");
@@ -145,7 +137,7 @@ function WalletConnect() {
     }
   };
 
-  // Gerçek ETH withdraw (WalletBank'tan çek)
+  //  ETH withdraw 
   const handleWithdraw = async (e) => {
     e.preventDefault();
     if (!window.ethereum) return alert("MetaMask not found");
@@ -165,7 +157,7 @@ function WalletConnect() {
     }
   };
 
-  // Gerçek ETH transfer (WalletBank üzerinden başka adrese transfer)
+  // ETH transfer 
   const handleTransfer = async (e) => {
     e.preventDefault();
     if (!window.ethereum) return alert("MetaMask not found");
@@ -187,7 +179,7 @@ function WalletConnect() {
   };
 
 
-  // Gerçek WBT transfer işlemi
+  //  WBT transfer 
   const handleWbtTransfer = async (e) => {
     e.preventDefault();
     if (!window.ethereum) return alert("MetaMask not found");
@@ -202,7 +194,6 @@ function WalletConnect() {
       await tx.wait();
       setWbtTransferAmount("");
       setWbtTransferTo("");
-      // Transfer sonrası bakiyeyi güncelle
       const bal = await contract.balanceOf(account);
       setWbtBalance(Number(formatUnits(bal, decimals)));
       alert("Transfer başarılı!");
@@ -274,7 +265,6 @@ function WalletConnect() {
               <button type="submit" className="action-button transfer">Transfer</button>
             </form>
 
-            {/* WBT Token Alanı */}
             <div className="wallet-balance">
               <span>{wbtSymbol} Token:</span>
               <span className="balance-amount">{wbtBalance} {wbtSymbol}</span>
