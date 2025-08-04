@@ -48,7 +48,7 @@ function WalletConnect() {
       
       const ethBal = await provider.getBalance(account);
       newBalance = Number(formatUnits(ethBal, 18));
-      setBalance(newBalance);
+      setBalance(Number(newBalance.toFixed(6)));
       
       localStorage.setItem('wbtBalance', newWbtBalance.toString());
       localStorage.setItem('ethBalance', newBalance.toString());
@@ -194,8 +194,7 @@ function WalletConnect() {
       await tx.wait();
       setWbtTransferAmount("");
       setWbtTransferTo("");
-      const bal = await contract.balanceOf(account);
-      setWbtBalance(Number(formatUnits(bal, decimals)));
+      await getBalances();
       alert("Transfer başarılı!");
     } catch (err) {
       alert("Transfer başarısız: " + (err?.reason || err?.message || err));
