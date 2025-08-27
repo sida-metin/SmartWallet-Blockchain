@@ -91,4 +91,34 @@ describe("TradingGame", function(){
         await tradingGame.connect(player1).dailyReward();
     });
 
+    it("should let player to complete the task", async function(){
+        const entryFee = await tradingGame.entryFee();
+        await tradingGame.connect(player1).joinGame({value: entryFee});
+        await tradingGame.connect(owner).addTask("Buy Pet", "Buy a pet", 100, 0);
+        await tradingGame.connect(player1).completeTask(0);
+    });
+
+    it("should let player to complete all tasks and get bonus", async function(){
+        const entryFee = await tradingGame.entryFee();
+        await tradingGame.connect(player1).joinGame({value: entryFee});
+        await tradingGame.connect(owner).addTask("Buy Pet", "Buy a pet", 100, 0);
+        await tradingGame.connect(owner).addTask("Feed Pet", "Feed a pet", 100, 1);
+        await tradingGame.connect(owner).addTask("Like Pet", "Like a pet", 100, 2);
+        await tradingGame.connect(owner).addTask("Sell Pet", "Sell a pet", 100, 3);
+        await tradingGame.connect(owner).addTask("Daily Login", "Login daily", 100, 4);
+        await tradingGame.connect(player1).completeTask(0);
+        await tradingGame.connect(player1).completeTask(1);
+        await tradingGame.connect(player1).completeTask(2);
+        await tradingGame.connect(player1).completeTask(3);
+        
+       
+        const initialBalance = (await tradingGame.playerInfo(player1.address)).balance;
+        await expect(tradingGame.connect(player1).completeTask(4))
+            .to.emit(tradingGame, "AllTasksBonusClaimed")
+            .withArgs(player1.address);
+        
+        const finalBalance = (await tradingGame.playerInfo(player1.address)).balance;
+        expect(finalBalance - initialBalance).to.equal(115); // 100 WBT görev + 15 WBT bonus
+    });
+
 });

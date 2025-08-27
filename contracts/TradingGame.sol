@@ -18,7 +18,10 @@ contract TradingGame {
     event PetCanceledForSale(address indexed player, uint indexed petId);
     event PetForSale(address indexed player, uint indexed petId, uint price);
     event PetLiked(address indexed player, uint indexed petId);
+    event TaskCompleted(address indexed player, uint indexed taskId, uint reward);
+    event TaskAdded(uint indexed taskId, string name, uint reward);
     event DailyRewardClaimed(address indexed player);
+    event AllTasksBonusClaimed(address indexed player);
 
     constructor (IERC20 _token){
         owner = msg.sender;
@@ -40,10 +43,34 @@ contract TradingGame {
         uint balance;
         bool isActive;
         uint lastClaimed;
+        uint completedTaskCount;
     }
     Player [] public players;
     mapping (address => Player) public playerInfo;
     mapping(address => bool) public hasJoined;
+
+    struct Task {
+        uint id;
+        string name;
+        string description;
+        uint reward;
+        bool isCompleted;
+        TaskType taskType;
+    }
+
+    enum TaskType {
+        BUY_PET,
+        FEED_PET,
+        LIKE_PET,
+        SELL_PET,
+        DAILY_LOGIN
+    }
+    Task[] public tasks;
+    mapping (address => mapping(uint => bool)) public playerTask;
+    mapping(address => mapping(uint => bool)) public completedTasks;
+    mapping(uint => Task) public tasksById;
+    mapping(address => uint) public playerTaskCount;
+
 
     struct Pet{
         uint id;
@@ -117,6 +144,9 @@ contract TradingGame {
         pets[_petId].isForSale = false;
         pets[_petId].price = _price;
         pets[_petId].owner = msg.sender;
+
+        emit PetSold(msg.sender,_petId,_price);
+
     }
 
     function feedPet(uint _petId) public{
@@ -187,7 +217,8 @@ contract TradingGame {
             name: "Player",
             balance: gameFee,
             isActive: true,
-            lastClaimed: block.timestamp
+            lastClaimed: block.timestamp,
+            completedTaskCount: 0
         });
         players.push(newPlayer);
         hasJoined[msg.sender] = true;
@@ -200,20 +231,77 @@ contract TradingGame {
         require(pets[_petId].owner != msg.sender, "You can not like your own pet!");
         require(_petId < pets.length, "Pet not found!");
         pets[_petId].likes += 1;
-        playerInfo[msg.sender].balance += 5;
 
         emit PetLiked(msg.sender, _petId);
 
     }
 
+
     function dailyReward() public {
         require(playerInfo[msg.sender].isActive, "You are not active!");
         require(block.timestamp - playerInfo[msg.sender].lastClaimed >= 1 days, "You have already claimed your daily reward!");
-        
         playerInfo[msg.sender].balance += 10;
         playerInfo[msg.sender].lastClaimed = block.timestamp; 
-        
+    
         emit DailyRewardClaimed(msg.sender);
+
     }
+
+    function defaultTasks() public onlyOwner{
+        addTask("Buy Pet", "Buy a pet", 15, TaskType.BUY_PET);
+        addTask("Feed Pet", "Feed a pet", 5, TaskType.FEED_PET);
+        addTask("Like Pet", "Like a pet", 2, TaskType.LIKE_PET);
+        addTask("Sell Pet", "Sell a pet", 15, TaskType.SELL_PET);
+        addTask("Daily Login", "Login daily", 10, TaskType.DAILY_LOGIN);
+    }
+
+    function addTask(string memory _name, string memory _description, uint _reward, TaskType _taskType) public onlyOwner {
+        uint taskId = tasks.length;
+        tasks.push(Task({
+            id: taskId,
+            name: _name,
+            description: _description,
+            reward: _reward,
+            isCompleted: false,
+            taskType: _taskType
+        }));
+        
+        emit TaskAdded(taskId, _name, _reward);
+    }
+
+    function getCompletedTasks(address _player) public view returns(uint[] memory) {  // memory = geçici hafıza , storage= kalıcı hafıza
+        uint[] memory completedTaskIds = new uint[](playerTaskCount[_player]);
+        uint index = 0;
+        for(uint i = 0; i < tasks.length; i++) {
+            if(completedTasks[_player][i]) {
+                completedTaskIds[index] = i;
+                index++;
+            }
+        }
+        return completedTaskIds;
+    }
+
+    function completeTask(uint _taskId) public {
+        require(_taskId < tasks.length, "Task does not exist!");
+        require(!completedTasks[msg.sender][_taskId], "Task already completed!");
+        
+        Task storage task = tasks[_taskId];
+        playerInfo[msg.sender].balance += task.reward;
+        completedTasks[msg.sender][_taskId] = true;
+        playerInfo[msg.sender].completedTaskCount += 1;
+        
+        emit TaskCompleted(msg.sender, _taskId, task.reward);
+
+        if(playerInfo[msg.sender].completedTaskCount == tasks.length) {
+            playerInfo[msg.sender].balance += 15; // 15 WBT bonus
+            emit AllTasksBonusClaimed(msg.sender);
+        }
+    }
+
+    function checkAllTasksCompleted(address _player) public view returns(bool) {
+        return playerInfo[_player].completedTaskCount == tasks.length;
+    }
+
+
 
 }
