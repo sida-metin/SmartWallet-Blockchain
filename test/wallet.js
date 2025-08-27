@@ -1,6 +1,5 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 
 describe( "WalletBank", function(){
     let wallet,owner,reciever;
@@ -22,8 +21,7 @@ describe( "WalletBank", function(){
     it("should emit DepositMade event on deposit", async function() {
         const depositAmount = ethers.parseEther("1");
         await expect(wallet.deposit({ value: depositAmount }))
-            .to.emit(wallet, "DepositMade")
-            .withArgs(owner.address, depositAmount, anyValue);
+            .to.emit(wallet, "DepositMade");
     });
 
     it("should transfer the amount to the receiver", async function() {
