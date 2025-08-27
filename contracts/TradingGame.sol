@@ -236,7 +236,6 @@ contract TradingGame {
 
     }
 
-
     function dailyReward() public {
         require(playerInfo[msg.sender].isActive, "You are not active!");
         require(block.timestamp - playerInfo[msg.sender].lastClaimed >= 1 days, "You have already claimed your daily reward!");
