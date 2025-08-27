@@ -18,6 +18,7 @@ contract TradingGame {
     event PetCanceledForSale(address indexed player, uint indexed petId);
     event PetForSale(address indexed player, uint indexed petId, uint price);
     event PetLiked(address indexed player, uint indexed petId);
+    event DailyRewardClaimed(address indexed player);
 
     constructor (IERC20 _token){
         owner = msg.sender;
@@ -38,6 +39,7 @@ contract TradingGame {
         string name;
         uint balance;
         bool isActive;
+        uint lastClaimed;
     }
     Player [] public players;
     mapping (address => Player) public playerInfo;
@@ -92,7 +94,7 @@ contract TradingGame {
         return playerPet[_playerAddress][_petId];
     }
 
-    function buyPet(uint _petId) public payable{
+    function buyPet(uint _petId) public {
         require(pets[_petId].isForSale, "Pet is not for sale!");
         require(playerInfo[msg.sender].balance >= pets[_petId].price, "Not enough balance!");
         require(pets[_petId].owner != msg.sender, "You already own this pet!");
@@ -107,6 +109,14 @@ contract TradingGame {
         playerPetIds[msg.sender].push(_petId);
 
         emit PetBought(msg.sender,_petId);
+    }
+
+    function sellPet(uint _petId, uint _price) public{
+        require(pets[_petId].owner == msg.sender, "You are not the owner of this pet!");
+        require(pets[_petId].isForSale, "Pet is not for sale!");
+        pets[_petId].isForSale = false;
+        pets[_petId].price = _price;
+        pets[_petId].owner = msg.sender;
     }
 
     function feedPet(uint _petId) public{
@@ -176,7 +186,8 @@ contract TradingGame {
             playerAddress: msg.sender,
             name: "Player",
             balance: gameFee,
-            isActive: true
+            isActive: true,
+            lastClaimed: block.timestamp
         });
         players.push(newPlayer);
         hasJoined[msg.sender] = true;
@@ -190,9 +201,19 @@ contract TradingGame {
         require(_petId < pets.length, "Pet not found!");
         pets[_petId].likes += 1;
         playerInfo[msg.sender].balance += 5;
-        
+
         emit PetLiked(msg.sender, _petId);
 
+    }
+
+    function dailyReward() public {
+        require(playerInfo[msg.sender].isActive, "You are not active!");
+        require(block.timestamp - playerInfo[msg.sender].lastClaimed >= 1 days, "You have already claimed your daily reward!");
+        
+        playerInfo[msg.sender].balance += 10;
+        playerInfo[msg.sender].lastClaimed = block.timestamp; 
+        
+        emit DailyRewardClaimed(msg.sender);
     }
 
 }
