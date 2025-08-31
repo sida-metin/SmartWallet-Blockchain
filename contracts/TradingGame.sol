@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract TradingGame {
     address public owner;
     uint public entryFee = 0.01 ether;
-    uint public gameFee = 1_000_000_000; // 10 WBT
+    uint public gameFee = 10; // 10 WBT
     IERC20 public token;
 
 
@@ -26,6 +26,7 @@ contract TradingGame {
     constructor (IERC20 _token){
         owner = msg.sender;
         token = _token;
+        
     }
 
     modifier onlyOwner(){
@@ -90,15 +91,17 @@ contract TradingGame {
     mapping (address => mapping(uint => uint)) public playerPet; // her bir player kaç pete sahip
     mapping (address => uint[]) public playerPetIds; // player hangi petlere sahip
 
-    function defaultPets() public onlyOwner{
+    function defaultPets() public  {
+        require(pets.length == 0, "Default pets already exist!");
+        
         addPet(1, "Cat", "Male", 100, "Legendary", 100, 100, 100, address(0), 100, false, 100000);
         addPet(2, "Doggy", "Female", 50, "Epic", 100, 100, 100, address(0), 90, true, 1000);
         addPet(3, "Fish", "Male", 10, "Common", 100, 100, 100, address(0), 50, true, 10);
         addPet(4, "Rabbit", "Female", 15, "Common", 100, 100, 100, address(0), 55, true, 20);
         addPet(5, "Bird", "Male", 30, "Rare", 100, 100, 100, address(0), 40, true, 50);
         addPet(6, "Guvercin", "Male", 1, "Taklaci", 100, 100, 100, address(0), 1, true, 1);
-      
     }
+
 
     function addPet(uint _id, string memory _name, string memory _gender, uint _level,string memory _types ,uint _hunger, uint _hapiness, uint _health, address _owner, uint _price, bool _isForSale, uint _likes) public onlyOwner{
         pets.push(Pet({
@@ -113,7 +116,7 @@ contract TradingGame {
             owner: _owner,
             price: _price,
             isForSale: _isForSale,
-            likes: 0
+            likes: _likes 
         }));
     }
 
@@ -223,6 +226,8 @@ contract TradingGame {
         players.push(newPlayer);
         hasJoined[msg.sender] = true;
         playerInfo[msg.sender] = newPlayer;
+        
+        // token.transfer(msg.sender, gameFee); // Temporarily disabled
 
         emit PlayerJoined(msg.sender);
     }

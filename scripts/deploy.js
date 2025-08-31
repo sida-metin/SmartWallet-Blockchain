@@ -15,7 +15,7 @@ async function main() {
 
     // TradingGame deploy
     const TradingGame = await ethers.getContractFactory("TradingGame");
-    const tradingGame = await TradingGame.deploy();
+    const tradingGame = await TradingGame.deploy(wbt.address);
     await tradingGame.deployed();
     console.log("TradingGame deployed to:", tradingGame.address);
 }
