@@ -11,6 +11,10 @@ function App() {
   const [hasJoined, setHasJoined] = useState(false);
   const [pets, setPets] = useState([]);
   const [wbtBalance, setWbtBalance] = useState(0);
+  const [showUserPanel, setShowUserPanel] = useState(false);
+  const toggleUserPanel = () => {
+    setShowUserPanel(!showUserPanel);
+  }
 
   const connectWallet = async () => {
     if(window.ethereum){
@@ -109,9 +113,39 @@ function App() {
     }
   }
 
+  const handlePetClick = (pet) => {
+    if(!pet.isForSale) {
+      alert('This pet is not for sale!');
+      return;
+    }
+  }
+
   return (
     <div className="App">
       <header className="App-header">
+        {isConnected && (
+          <div style={{position: 'absolute', top: '20px', right: '20px'}}>
+            <button 
+              className="user-panel-button" 
+              onClick={toggleUserPanel}
+              style={{
+                padding: '10px 15px',
+                backgroundColor: '#fcf75e',
+                color: '#644117',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                fontFamily: 'Arial, Helvetica, sans-serif',
+                letterSpacing: '0.2px',
+                wordSpacing: '0.6px',
+                border: '1px solid #906857',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              User Panel
+            </button>
+          </div>
+        )}
         <h1> Petrade </h1>
         {!isConnected && (
           <button className="connect-button" onClick={connectWallet}>
@@ -139,13 +173,13 @@ function App() {
                 <h3>Pets:</h3>
                 <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center'}}>
                   {pets.map((pet, index) => (
-                    <div key={index} style={{border: '1px solid #ccc', padding: '10px', borderRadius: '5px', minWidth: '150px'}}>
-                      <h4>{pet.name}</h4>
-                      <p>Type: {pet.types}</p>
-                      <p>Level: {pet.level}</p>
-                      <p>Price: {pet.price} WBT</p>
-                      <p>For Sale: {pet.isForSale ? 'Yes' : 'No'}</p>
-                    </div>
+                    <div key={index} className="pet-card" onClick={() => handlePetClick(pet)} style={{cursor: 'pointer'}}>
+                      <h4 className="pet-name">{pet.name}</h4>
+                      <p className="pet-type">Type: <span className="pet-type-value">{pet.types}</span></p>
+                      <p className="pet-level">Level: <span className="pet-level-value">{pet.level}</span></p>
+                      <p className="pet-price">Price: <span className="pet-price-value">{pet.price} WBT</span></p>
+                      <p className={pet.isForSale ? 'sale-yes' : 'sale-no'}> For Sale: {pet.isForSale ? 'Yes' : 'No'}</p>                   
+                   </div>
                   ))}
                 </div>
               </div>
@@ -153,6 +187,19 @@ function App() {
         
           </div>
          )}
+
+        {showUserPanel && (
+          <div className="user-panel-modal">
+            <div className="user-panel-content">
+              <h3 style={{color: '#906857', fontSize: '24px', fontWeight: 'bold', fontFamily: 'Arial, Helvetica, sans-serif', letterSpacing: '0.2px', wordSpacing: '0.6px'}}>User Information</h3>
+              <p><strong style={{color: '#906857'}}>Address:</strong> <span style={{color: '#34495e', fontSize: '16px', fontWeight: 'bold', fontFamily: 'Arial, Helvetica, sans-serif', letterSpacing: '0.2px', wordSpacing: '0.6px'}}>{account}</span></p>
+              <p><strong style={{color: '#906857'}}>Name:</strong> <span style={{color: '#34495e', fontSize: '16px', fontWeight: 'bold', fontFamily: 'Arial, Helvetica, sans-serif', letterSpacing: '0.2px', wordSpacing: '0.6px'}}>Player</span></p>
+              <p><strong style={{color: '#906857'}}>Balance:</strong> <span style={{color: '#34495e', fontSize: '16px', fontWeight: 'bold', fontFamily: 'Arial, Helvetica, sans-serif', letterSpacing: '0.2px', wordSpacing: '0.6px'}}>{balance} WBT</span></p>
+              <p><strong style={{color: '#906857'}}>Status:</strong> <span style={{color: '#34495e', fontSize: '16px', fontWeight: 'bold', fontFamily: 'Arial, Helvetica, sans-serif', letterSpacing: '0.2px', wordSpacing: '0.6px'}}>{hasJoined ? 'Active' : 'Not Joined'}</span></p>
+              <button onClick={toggleUserPanel}>Close</button>
+            </div>
+          </div>
+        )}
       </header>
     </div>
   );
