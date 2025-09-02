@@ -12,6 +12,10 @@ function App() {
   const [pets, setPets] = useState([]);
   const [wbtBalance, setWbtBalance] = useState(0);
   const [showUserPanel, setShowUserPanel] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState([]);
+  const [showTasks, setShowTasks] = useState(false);
+  const [showMyPets, setShowMyPets] = useState(false);
   const toggleUserPanel = () => {
     setShowUserPanel(!showUserPanel);
   }
@@ -45,6 +49,8 @@ function App() {
           
           // Load pets if already joined
           getAllPets(web3);
+          // Load tasks
+          loadTasks(web3);
         }
 
       }catch(error){
@@ -113,6 +119,145 @@ function App() {
     }
   }
 
+  const loadTasks = async (web3Instance) => {
+    try {
+      const contract = new web3Instance.eth.Contract(TRADINGGAME_ABI, TRADINGGAME_ADDRESS);
+      
+      // Test basic contract connection first
+      console.log('Testing contract connection...');
+      const owner = await contract.methods.owner().call();
+      console.log('Contract owner:', owner);
+      
+      // Check if tasks array exists and has content
+      console.log('Checking tasks array...');
+      try {
+        const task0 = await contract.methods.tasks(0).call();
+        console.log('First task:', task0);
+      } catch(e) {
+        console.log('No tasks found or tasks array is empty');
+        setTasks([]);
+        return;
+      }
+      
+      // Try to get tasks count first
+      let tasksCount = 0;
+      try {
+        // Check if there are any tasks by trying to access them
+        for(let i = 0; i < 10; i++) {
+          const task = await contract.methods.tasks(i).call();
+          if(task.id !== undefined) {
+            tasksCount = i + 1;
+          } else {
+            break;
+          }
+        }
+      } catch(e) {
+        // No more tasks
+      }
+      
+      console.log('Tasks count:', tasksCount);
+      
+      // Get each task individually
+      const tasksArray = [];
+      for(let i = 0; i < tasksCount; i++) {
+        const task = await contract.methods.tasks(i).call();
+        tasksArray.push(task);
+      }
+      setTasks(tasksArray);
+      console.log('Tasks loaded:', tasksArray);
+    } catch(error) {
+      console.error('Error loading tasks:', error);
+    }
+  }
+
+  const completeTask = async (taskId) => {
+    try {
+      const contract = new web3.eth.Contract(TRADINGGAME_ABI, TRADINGGAME_ADDRESS);
+      await contract.methods.completeTask(taskId).send({
+        from: account,
+        gas: 3000000
+      });
+      alert('Task completed! You earned WBT!');
+      // Refresh tasks and balance
+      loadTasks(web3);
+      // Update balance
+      const playerInfo = await contract.methods.playerInfo(account).call();
+      setBalance(playerInfo.balance);
+    } catch(error) {
+      console.error('Error completing task:', error);
+      alert('Error completing task!');
+    }
+  }
+
+  const addDefaultTasks = async () => {
+    try {
+      const contract = new web3.eth.Contract(TRADINGGAME_ABI, TRADINGGAME_ADDRESS);
+      await contract.methods.defaultTasks().send({
+        from: account,
+        gas: 3000000
+      });
+      alert('Default tasks added successfully!');
+      // Refresh tasks
+      loadTasks(web3);
+    } catch(error) {
+      console.error('Error adding default tasks:', error);
+      alert('Error adding default tasks!');
+    }
+  }
+
+  const buyPet = async (petId, price) => {
+    try {
+      const contract = new web3.eth.Contract(TRADINGGAME_ABI, TRADINGGAME_ADDRESS);
+      await contract.methods.buyPet(petId).send({
+        from: account,
+        gas: 3000000
+      });
+      alert('Pet purchased successfully!');
+      // Refresh pets and balance
+      getAllPets(web3);
+      const playerInfo = await contract.methods.playerInfo(account).call();
+      setBalance(playerInfo.balance);
+    } catch(error) {
+      console.error('Error buying pet:', error);
+      alert('Error buying pet!');
+    }
+  }
+
+  const getMyPets = async () => {
+    try {
+      const contract = new web3.eth.Contract(TRADINGGAME_ABI, TRADINGGAME_ADDRESS);
+      const myPets = [];
+      
+      // Check all pets to see which ones belong to the player
+      for(let i = 0; i < pets.length; i++) {
+        if(pets[i].owner.toLowerCase() === account.toLowerCase()) {
+          myPets.push({...pets[i], index: i});
+        }
+      }
+      
+      return myPets;
+    } catch(error) {
+      console.error('Error getting my pets:', error);
+      return [];
+    }
+  }
+
+  const feedPet = async (petId) => {
+    try {
+      const contract = new web3.eth.Contract(TRADINGGAME_ABI, TRADINGGAME_ADDRESS);
+      await contract.methods.feedPet(petId).send({
+        from: account,
+        gas: 3000000
+      });
+      alert('Pet fed successfully!');
+      // Refresh pets
+      getAllPets(web3);
+    } catch(error) {
+      console.error('Error feeding pet:', error);
+      alert('Error feeding pet!');
+    }
+  }
+
   const handlePetClick = (pet) => {
     if(!pet.isForSale) {
       alert('This pet is not for sale!');
@@ -144,6 +289,46 @@ function App() {
             >
               User Panel
             </button>
+            <button 
+              className="tasks-button" 
+              onClick={() => setShowTasks(!showTasks)}
+              style={{
+                padding: '10px 15px',
+                backgroundColor: '#fcf75e',
+                color: '#644117',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                fontFamily: 'Arial, Helvetica, sans-serif',
+                letterSpacing: '0.2px',
+                wordSpacing: '0.6px',
+                border: '1px solid #906857',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                marginLeft: '10px'
+              }}
+            >
+              📋 Tasks
+            </button>
+            <button 
+              className="my-pets-button" 
+              onClick={() => setShowMyPets(!showMyPets)}
+              style={{
+                padding: '10px 15px',
+                backgroundColor: '#fcf75e',
+                color: '#644117',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                fontFamily: 'Arial, Helvetica, sans-serif',
+                letterSpacing: '0.2px',
+                wordSpacing: '0.6px',
+                border: '1px solid #906857',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                marginLeft: '10px'
+              }}
+            >
+              🐾 My Pets
+            </button>
           </div>
         )}
         <h1> Petrade </h1>
@@ -173,13 +358,32 @@ function App() {
                 <h3>Pets:</h3>
                 <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center'}}>
                   {pets.map((pet, index) => (
-                    <div key={index} className="pet-card" onClick={() => handlePetClick(pet)} style={{cursor: 'pointer'}}>
-                      <h4 className="pet-name">{pet.name}</h4>
+                    <div className="pet-card" key={index} onClick={() => handlePetClick(pet)} style={{cursor: 'pointer'}}>
+                      <h3 className="pet-name">{pet.name}</h3>
                       <p className="pet-type">Type: <span className="pet-type-value">{pet.types}</span></p>
-                      <p className="pet-level">Level: <span className="pet-level-value">{pet.level}</span></p>
-                      <p className="pet-price">Price: <span className="pet-price-value">{pet.price} WBT</span></p>
-                      <p className={pet.isForSale ? 'sale-yes' : 'sale-no'}> For Sale: {pet.isForSale ? 'Yes' : 'No'}</p>                   
-                   </div>
+                      <p className="pet-level">Level: {pet.level}</p>
+                      <p className="pet-price">Price: {pet.price} WBT</p>
+                      <p className="pet-sale">For Sale: <span className={pet.isForSale ? 'sale-yes' : 'sale-no'}>{pet.isForSale ? 'Yes' : 'No'}</span></p>
+                      {pet.isForSale && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            buyPet(index, pet.price);
+                          }}
+                          style={{
+                            padding: '8px 16px',
+                            backgroundColor: '#644117',
+                            color: '#fcf75e',
+                            border: 'none',
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            marginTop: '10px'
+                          }}
+                        >
+                          Buy Pet
+                        </button>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -197,6 +401,100 @@ function App() {
               <p><strong style={{color: '#906857'}}>Balance:</strong> <span style={{color: '#34495e', fontSize: '16px', fontWeight: 'bold', fontFamily: 'Arial, Helvetica, sans-serif', letterSpacing: '0.2px', wordSpacing: '0.6px'}}>{balance} WBT</span></p>
               <p><strong style={{color: '#906857'}}>Status:</strong> <span style={{color: '#34495e', fontSize: '16px', fontWeight: 'bold', fontFamily: 'Arial, Helvetica, sans-serif', letterSpacing: '0.2px', wordSpacing: '0.6px'}}>{hasJoined ? 'Active' : 'Not Joined'}</span></p>
               <button onClick={toggleUserPanel}>Close</button>
+            </div>
+          </div>
+        )}
+
+        {showTasks && (
+          <div className="tasks-panel-modal">
+            <div className="tasks-panel-content">
+              <h3 style={{color: '#906857', fontSize: '24px', fontWeight: 'bold', fontFamily: 'Arial, Helvetica, sans-serif', letterSpacing: '0.2px', wordSpacing: '0.6px'}}>Available Tasks</h3>
+              {tasks.length > 0 ? (
+                <div className="tasks-list">
+                  {tasks.map((task, index) => (
+                    <div key={index} className="task-item">
+                      <h4 style={{color: '#34495e'}}>{task.name}</h4>
+                      <p style={{color: '#666'}}>{task.description}</p>
+                      <p style={{color: '#906857', fontWeight: 'bold'}}>Reward: {task.reward} WBT</p>
+                      <button 
+                        onClick={() => completeTask(index)}
+                        style={{
+                          padding: '8px 16px',
+                          backgroundColor: '#4CAF50',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '5px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Complete Task
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>No tasks available. Contact owner to add tasks.</p>
+              )}
+              {isConnected && account.toLowerCase() === '0x106a86e3e563ff5d394ad2c01650157f3d8e56dd' && (
+                <button 
+                  onClick={addDefaultTasks}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    marginTop: '15px'
+                  }}
+                >
+                  Add Default Tasks (Owner Only)
+                </button>
+              )}
+              {isConnected && (
+                <div style={{marginTop: '15px', fontSize: '12px', color: '#666'}}>
+                  Debug: isConnected={isConnected.toString()}, account={account}, owner=0x106A86E3E563fF5D394aD2c01650157F3d8E56DD
+                </div>
+              )}
+              <button onClick={() => setShowTasks(false)}>Close</button>
+            </div>
+          </div>
+        )}
+
+        {showMyPets && (
+          <div className="my-pets-modal">
+            <div className="my-pets-content">
+              <h3 style={{color: '#906857', fontSize: '24px', fontWeight: 'bold', fontFamily: 'Arial, Helvetica, sans-serif', letterSpacing: '0.2px', wordSpacing: '0.6px'}}>My Pets</h3>
+              <div className="my-pets-list">
+                {pets.filter(pet => pet.owner.toLowerCase() === account.toLowerCase()).map((pet, index) => (
+                  <div key={index} className="my-pet-item">
+                    <h4 style={{color: '#34495e'}}>{pet.name}</h4>
+                    <p style={{color: '#666'}}>Type: {pet.types}</p>
+                    <p style={{color: '#666'}}>Level: {pet.level}</p>
+                    <p style={{color: '#906857', fontWeight: 'bold'}}>Health: {pet.health}</p>
+                    <p style={{color: '#906857', fontWeight: 'bold'}}>Hunger: {pet.hunger}</p>
+                    <p style={{color: '#906857', fontWeight: 'bold'}}>Happiness: {pet.hapiness}</p>
+                    <button 
+                      onClick={() => feedPet(index)}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        marginTop: '10px'
+                      }}
+                    >
+                      🍖 Feed Pet
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {pets.filter(pet => pet.owner.toLowerCase() === account.toLowerCase()).length === 0 && (
+                <p>You don't have any pets yet. Buy some pets first!</p>
+              )}
+              <button onClick={() => setShowMyPets(false)}>Close</button>
             </div>
           </div>
         )}
