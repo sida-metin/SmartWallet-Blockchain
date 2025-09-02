@@ -1,5 +1,4 @@
 import React,{useState} from 'react';
-import logo from './logo.svg';
 import Web3 from 'web3';
 import { TRADINGGAME_ADDRESS, TRADINGGAME_ABI, WBT_ADDRESS, WBT_ABI } from './addresses.js';
 import './App.css';
@@ -11,6 +10,7 @@ function App() {
   const [web3, setWeb3] = useState(null);
   const [hasJoined, setHasJoined] = useState(false);
   const [pets, setPets] = useState([]);
+  const [wbtBalance, setWbtBalance] = useState(0);
 
   const connectWallet = async () => {
     if(window.ethereum){
@@ -32,7 +32,15 @@ function App() {
         if (hasJoinedResult) {
           const playerInfo = await contract.methods.playerInfo(accounts[0]).call();
           setBalance(playerInfo.balance);
-          getAllPets();
+          
+          // Get WBT token balance
+          const wbtContract = new web3.eth.Contract(WBT_ABI, WBT_ADDRESS);
+          const wbtBalance = await wbtContract.methods.balanceOf(accounts[0]).call();
+          setWbtBalance(wbtBalance);
+          console.log('WBT Token Balance:', wbtBalance);
+          
+          // Load pets if already joined
+          getAllPets(web3);
         }
 
       }catch(error){
@@ -90,9 +98,9 @@ function App() {
     }
   }
 
-  const getAllPets = async () => {
+  const getAllPets = async (web3Instance) => {
     try {
-      const contract = new web3.eth.Contract(TRADINGGAME_ABI, TRADINGGAME_ADDRESS);
+      const contract = new web3Instance.eth.Contract(TRADINGGAME_ABI, TRADINGGAME_ADDRESS);
       const petsResult = await contract.methods.getAllPets().call();
       setPets(petsResult);
       console.log('Pets loaded:', petsResult);
@@ -101,44 +109,28 @@ function App() {
     }
   }
 
-  const addDefaultPets = async () => {
-    try {
-      const contract = new web3.eth.Contract(TRADINGGAME_ABI, TRADINGGAME_ADDRESS);
-      await contract.methods.defaultPets().send({
-        from: account,
-        gas: 3000000
-      });
-      alert('Default pets added successfully!');
-      getAllPets(); // Refresh pets list
-    } catch(error) {
-      console.error('Error adding default pets:', error);
-      alert('Error adding default pets! Check console for details.');
-    }
-  }
-
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
         <h1> Petrade </h1>
         {!isConnected && (
-          <button onClick={connectWallet}>
+          <button className="connect-button" onClick={connectWallet}>
             Connect Metamask!
           </button>
         )}
          {isConnected && (
           <div>
-            <p>Wallet connected! Address: {account}</p>
-            <p>Balance: {balance} WBT</p>
+            <p>
+            <span className="wallet-connected"> Wallet connected! Address: </span>
+            <span className="wallet-address">{account}</span>
+            </p>
+            <p>
+              <span className="balance-text">Balance: </span>
+              <span className="balance-value">{balance} WBT</span>
+            </p>
             {!hasJoined && (
-              <button onClick={joinGame} style={{margin: '10px', padding: '10px 20px', fontSize: '16px'}}>
+              <button className="join-button" onClick={joinGame} style={{margin: '10px', padding: '10px 20px', fontSize: '16px'}}>
                 Join Game
-              </button>
-            )}
-
-            {hasJoined && pets.length < 6 && (
-              <button onClick={addDefaultPets} style={{margin: '10px', padding: '10px 20px', fontSize: '16px', backgroundColor: '#4CAF50', color: 'white'}}>
-                Show Pets
               </button>
             )}
 
