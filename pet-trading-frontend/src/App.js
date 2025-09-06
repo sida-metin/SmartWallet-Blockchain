@@ -3,6 +3,9 @@ import Web3 from 'web3';
 import { TRADINGGAME_ADDRESS, TRADINGGAME_ABI, WBT_ADDRESS, WBT_ABI } from './addresses.js';
 import './App.css';
 
+// ADRES KONTROLÜ
+console.log("Contract Address:", TRADINGGAME_ADDRESS);
+
 function App() {
   const [balance, setBalance] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
@@ -21,6 +24,8 @@ function App() {
   }
 
   const connectWallet = async () => {
+    console.log("Contract Address:", TRADINGGAME_ADDRESS);
+    
     if(window.ethereum){
       try{
         const accounts = await window.ethereum.request({method: 'eth_requestAccounts'});
@@ -63,6 +68,8 @@ function App() {
   }
 
   const joinGame = async () => {
+    console.log("Contract Address:", TRADINGGAME_ADDRESS); // BURAYA YAZ
+    
     if(!isConnected) {
       alert('Please connect your wallet first!');
       return;
@@ -112,8 +119,9 @@ function App() {
     try {
       const contract = new web3Instance.eth.Contract(TRADINGGAME_ABI, TRADINGGAME_ADDRESS);
       const petsResult = await contract.methods.getAllPets().call();
-      setPets(petsResult);
       console.log('Pets loaded:', petsResult);
+      console.log('Pets count:', petsResult.length); // BURAYA EKLE
+      setPets(petsResult);
     } catch(error) {
       console.error('Error getting pets:', error);
     }
@@ -311,7 +319,12 @@ function App() {
             </button>
             <button 
               className="my-pets-button" 
-              onClick={() => setShowMyPets(!showMyPets)}
+              onClick={() => {
+                setShowMyPets(!showMyPets);
+                if (!showMyPets) {
+                  getMyPets(); // My Pets açılırken player pets'lerini yükle
+                }
+              }}
               style={{
                 padding: '10px 15px',
                 backgroundColor: '#fcf75e',
@@ -475,7 +488,7 @@ function App() {
                     <p style={{color: '#906857', fontWeight: 'bold'}}>Hunger: {pet.hunger}</p>
                     <p style={{color: '#906857', fontWeight: 'bold'}}>Happiness: {pet.hapiness}</p>
                     <button 
-                      onClick={() => feedPet(index)}
+                      onClick={() => feedPet(pet.id)}
                       style={{
                         padding: '8px 16px',
                         backgroundColor: '#4CAF50',
@@ -491,7 +504,7 @@ function App() {
                   </div>
                 ))}
               </div>
-              {pets.filter(pet => pet.owner.toLowerCase() === account.toLowerCase()).length === 0 && (
+              {pets.length === 0 && (
                 <p>You don't have any pets yet. Buy some pets first!</p>
               )}
               <button onClick={() => setShowMyPets(false)}>Close</button>

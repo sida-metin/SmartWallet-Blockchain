@@ -312,8 +312,8 @@
       ]
     },
     "/Users/sida/Desktop/BLOCKCHAIN PROJECTS/smartWallet-bank/contracts/TradingGame.sol": {
-      "lastModificationDate": 1756644419457,
-      "contentHash": "a5f469f28c5c08c30236e212e933a1fc",
+      "lastModificationDate": 1757179862620,
+      "contentHash": "c19fa15f864b4193f8f7727529e18122",
       "sourceName": "contracts/TradingGame.sol",
       "solcConfig": {
         "version": "0.8.20",

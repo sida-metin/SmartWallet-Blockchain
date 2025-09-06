@@ -1,5 +1,5 @@
 
-export const WALLETBANK_ADDRESS = "0x8390ca6fAab69653a09972817909A693649f905F";
+export const WALLETBANK_ADDRESS = "0x3376Fbf252F94C3E63b1eaBd53412D64542f1B39";
 export const WALLETBANK_ABI = [
   { "inputs": [], "stateMutability": "payable", "type": "function", "name": "deposit", "outputs": [] },
   { "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
@@ -7,7 +7,7 @@ export const WALLETBANK_ABI = [
   { "inputs": [{ "internalType": "address", "name": "_user", "type": "address" }], "name": "getBalance", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }
 ];
 
-export const WBT_ADDRESS = "0xB01C4fff3e484bF50C1d0152685210b3B0169eF8";
+export const WBT_ADDRESS = "0x6F525dd6Bb4396971154A75eE02007d958360132";
 export const WBT_ABI = [
   { "constant": true, "inputs": [{ "name": "account", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "type": "function", "stateMutability": "view" },
   { "constant": true, "inputs": [], "name": "decimals", "outputs": [{ "name": "", "type": "uint8" }], "type": "function", "stateMutability": "view" },
@@ -15,7 +15,7 @@ export const WBT_ABI = [
   { "constant": false, "inputs": [{ "name": "to", "type": "address" }, { "name": "value", "type": "uint256" }], "name": "transfer", "outputs": [{ "name": "", "type": "bool" }], "type": "function", "stateMutability": "nonpayable" }
 ];
 
-export const TRADINGGAME_ADDRESS = "0x2Ba5183A39d2F33dc7644020c34697666b255b46"; 
+export const TRADINGGAME_ADDRESS = "0x1269661f3c03860E49405794977cDC63fdaa1f1e"; 
 export const TRADINGGAME_ABI = [
   { "inputs": [{ "internalType": "contract IERC20", "name": "_token", "type": "address" }], "stateMutability": "nonpayable", "type": "constructor" },
   { "inputs": [], "name": "entryFee", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },

@@ -1,0 +1,11 @@
+const pets = await tradingGame.getAllPets();
+console.log("Pet 6 isForSale:", pet.isForSale);
+const pet = await tradingGame.pets(6);
+await tradingGame.petForSale(6, 1);
+const tradingGame = TradingGame.attach("0x9Cde1Af562Ed60D7D3C1bbBD8657C90769122a73");
+const TradingGame = await ethers.getContractFactory("TradingGame");
+clear
+await tradingGame.petForSale(6, 1);
+const TradingGame = await ethers.getContractFactory("TradingGame");
+const tradingGame = TradingGame.attach("0x9Cde1Af562Ed60D7D3C1bbBD8657C90769122a73");
+const TradingGame = await ethers.getContractFactory("TradingGame");

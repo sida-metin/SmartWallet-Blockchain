@@ -26,6 +26,8 @@ contract TradingGame {
     constructor (IERC20 _token){
         owner = msg.sender;
         token = _token;
+
+        defaultPets();
         
     }
 
@@ -86,12 +88,13 @@ contract TradingGame {
         uint price;
         bool isForSale;
         uint likes;
+        uint lastFed; // Added lastFed timestamp
     }
     Pet[] public pets;
     mapping (address => mapping(uint => uint)) public playerPet; // her bir player kaç pete sahip
     mapping (address => uint[]) public playerPetIds; // player hangi petlere sahip
 
-    function defaultPets() public  {
+    function defaultPets() public onlyOwner {
         require(pets.length == 0, "Default pets already exist!");
         
         addPet(1, "Cat", "Male", 100, "Legendary", 100, 100, 100, address(0), 100, false, 100000);
@@ -116,7 +119,8 @@ contract TradingGame {
             owner: _owner,
             price: _price,
             isForSale: _isForSale,
-            likes: _likes 
+            likes: _likes,
+            lastFed: block.timestamp // Initialize lastFed
         }));
     }
 
@@ -154,16 +158,31 @@ contract TradingGame {
 
     function feedPet(uint _petId) public{
         require(pets[_petId].owner == msg.sender, "You are not the owner of this pet!");
+        
+        // TEST İÇİN: Hunger'ı hızlı azalt (gerçek zamana göre değil)
+        uint timePassed = block.timestamp - pets[_petId].lastFed;
+        uint hungerDecrease = timePassed / 60; // 60 saniye = 1 hunger azalması (test için hızlı)
+        
+        if(pets[_petId].hunger > hungerDecrease) {
+            pets[_petId].hunger -= hungerDecrease;
+        } else {
+            pets[_petId].hunger = 0;
+        }
+        
         require(pets[_petId].hunger < 100, "Pet is full!");
 
         uint feedCost = pets[_petId].level * 2;
 
         require(playerInfo[msg.sender].balance >= feedCost, "Not enough balance!");
         playerInfo[msg.sender].balance -= feedCost;
+        
         // feeding the pet
         pets[_petId].hunger -= 10;
         pets[_petId].health += 10;
         pets[_petId].hapiness += 10;
+        
+        // lastFed'i güncelle
+        pets[_petId].lastFed = block.timestamp;
 
         //checking the limits
         if(pets[_petId].hunger < 0){
@@ -177,7 +196,6 @@ contract TradingGame {
         }
 
         emit PetFed(msg.sender, _petId);
-
     }
 
     function petForSale(uint _petId, uint _price) public{
